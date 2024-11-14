@@ -44,6 +44,7 @@ class CircleNavBar extends StatefulWidget {
   const CircleNavBar({
     super.key,
     required this.activeIndex,
+    this.localLang,
     this.onTap,
     this.tabCurve = Curves.linearToEaseOut,
     this.iconCurve = Curves.bounceOut,
@@ -65,11 +66,14 @@ class CircleNavBar extends StatefulWidget {
     this.levels,
     this.activeLevelsStyle,
     this.inactiveLevelsStyle,
-  })  : assert(circleWidth <= height, "circleWidth <= height"),
+  })
+      : assert(circleWidth <= height, "circleWidth <= height"),
         assert(activeIcons.length == inactiveIcons.length,
-            "activeIcons.length and inactiveIcons.length must be equal!"),
+        "activeIcons.length and inactiveIcons.length must be equal!"),
         assert(activeIcons.length > activeIndex,
-            "activeIcons.length > activeIndex");
+        "activeIcons.length > activeIndex");
+
+  final String? localLang;
 
   /// Bottom bar height (without bottom padding)
   ///
@@ -202,7 +206,9 @@ class _CircleNavBarState extends State<CircleNavBar>
         vsync: this,
         duration: Duration(milliseconds: widget.tabDurationMillSec))
       ..addListener(() => setState(() {}))
-      ..value = getPosition(widget.activeIndex);
+      ..value = getPosition(
+          widget.localLang == 'ar' ? ((widget.inactiveIcons.length - 1) -
+              widget.activeIndex).abs() : widget.activeIndex);
     activeIconAc = AnimationController(
         vsync: this,
         duration: Duration(milliseconds: widget.iconDurationMillSec))
@@ -217,7 +223,9 @@ class _CircleNavBarState extends State<CircleNavBar>
   }
 
   void _animation() {
-    final nextPosition = getPosition(widget.activeIndex);
+    final nextPosition = getPosition(
+        widget.localLang == 'ar' ? ((widget.inactiveIcons.length - 1) -
+            widget.activeIndex).abs() : widget.activeIndex);
     tabAc.stop();
     tabAc.animateTo(nextPosition, curve: widget.tabCurve);
     activeIconAc.reset();
@@ -231,7 +239,11 @@ class _CircleNavBarState extends State<CircleNavBar>
 
   @override
   Widget build(BuildContext context) {
-    double deviceWidth = MediaQuery.of(context).size.width;
+    double deviceWidth = MediaQuery
+        .of(context)
+        .size
+        .width;
+
     return Container(
       margin: widget.padding,
       width: double.infinity,
@@ -261,13 +273,17 @@ class _CircleNavBarState extends State<CircleNavBar>
           Row(
             children: widget.inactiveIcons.map((e) {
               int currentIndex = widget.inactiveIcons.indexOf(e);
+
+              ///  int activeIndex =widget.localLang=='ar'? ( (widget.inactiveIcons.length - 1) - widget.activeIndex).abs(): widget.activeIndex ;
               bool isActive = widget.activeIndex == currentIndex;
+
+              ///widget.localLang=='ar'? activeIndex == currentIndex:widget.activeIndex == currentIndex;
               return Expanded(
                 child: GestureDetector(
                   onTap: () => widget.onTap?.call(currentIndex),
                   child: Column(
                     mainAxisAlignment: widget.levels != null &&
-                            currentIndex < widget.levels!.length
+                        currentIndex < widget.levels!.length
                         ? MainAxisAlignment.end
                         : MainAxisAlignment.center,
                     children: [
@@ -313,7 +329,7 @@ class _CircleNavBarState extends State<CircleNavBar>
       ),
     );
   }
-  
+
   // Disposed of both tabAc and activeIconAc to prevent memory leaks and to avoid the error regarding active tickers.
   @override
   void dispose() {
@@ -411,13 +427,13 @@ class _CircleBottomPainter extends CustomPainter {
 
     if (gradient != null) {
       Rect shaderRect =
-          Rect.fromCircle(center: Offset(w / 2, h / 2), radius: 180.0);
+      Rect.fromCircle(center: Offset(w / 2, h / 2), radius: 180.0);
       paint.shader = gradient!.createShader(shaderRect);
     }
 
     if (circleGradient != null) {
       Rect shaderRect =
-          Rect.fromCircle(center: Offset(x, miniRadius), radius: iconWidth / 2);
+      Rect.fromCircle(center: Offset(x, miniRadius), radius: iconWidth / 2);
       circlePaint?.shader = circleGradient!.createShader(shaderRect);
     }
 
